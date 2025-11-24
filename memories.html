@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ذكرياتنا - To Safaa</title>
+    
+    <!-- Google Fonts for nice Arabic typography --><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS for layout structure --><script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Custom CSS - Organized for clarity */
+        
+        :root {
+            --dark-bg: #101010; /* Slightly darker */
+            --light-bg: #ffc0cb; /* Pink background */
+            --lamp-wire: #4a4a4a;
+            --lamp-glow: rgba(255, 230, 0, 0.8);
+            --text-color: #5d3a3a;
+            --pink-accent: #f48fb1;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            transition: background-color 2s ease; /* Transition for background fade */
+            overflow: hidden; /* Keep everything in one screen */
+            font-family: 'Cairo', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            /* Disable text selection/cursor */
+            user-select: none; 
+            -webkit-user-select: none; 
+            -moz-user-select: none; 
+            -ms-user-select: none; 
+        }
+
+        /* --- The Start Screen --- */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #2c2c2c 0%, #000 100%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease;
+        }
+
+        .start-btn {
+            /* Modified to be slightly smaller: */
+            padding: 14px 40px; /* Reduced vertical and horizontal padding */
+            font-size: 1.5rem; /* Reduced font size from 1.75rem */
+            color: white;
+            background: var(--pink-accent);
+            border: 3px solid white;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(244, 143, 177, 0.5);
+            font-weight: bold;
+        }
+
+        .start-btn:hover {
+            background: #fff;
+            color: var(--pink-accent);
+            transform: scale(1.05);
+            border-color: var(--pink-accent);
+        }
+
+        /* --- The Lamp --- */
+        #lamp-container {
+            position: absolute;
+            top: -200px; /* Hidden initially */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: top 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); /* Bouncy descent */
+        }
+
+        .wire {
+            width: 3px;
+            height: 40px;
+            background-color: var(--lamp-wire);
+        }
+
+        .bulb-holder {
+            width: 60px;
+            height: 70px;
+            background: #d4d4d4;
+            border-radius: 50% 50% 10% 10%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #999;
+        }
+        
+        /* The actual light part */
+        .bulb {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 0px rgba(255, 255, 0, 0);
+        }
+
+        /* Class added when lamp is clicked */
+        .bulb.lit {
+            background: #fff8a6;
+            box-shadow: 0 0 60px 20px var(--lamp-glow), inset 0 0 20px rgba(255, 255, 0, 1);
+        }
+
+        /* --- The Room Elements --- */
+        .wall-content {
+            opacity: 0;
+            transition: opacity 2s ease; /* Transition for content fade */
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .wall-content.visible {
+            opacity: 1;
+        }
+
+        /* Photos on the wall */
+        .message-note {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-family: 'Amiri', serif;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 1rem;
+            
+            /* Envelope styling */
+            background-color: #f3e5d8;
+            box-shadow: 4px 6px 12px rgba(0,0,0,0.25);
+            border-radius: 6px;
+        }
+
+        /* Style for the text inside */
+        .message-note span {
+            z-index: 4;
+            position: relative;
+            top: 12px; /* Push text down below the flap/seal */
+            font-size: 0.85rem;
+            line-height: 1.2;
+            padding: 0 5px;
+        }
+
+        /* Envelope Top Flap */
+        .message-note::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 60px solid transparent;
+            border-right: 60px solid transparent;
+            border-top: 40px solid #e4cbae; /* Slightly darker flap */
+            z-index: 2;
+        }
+
+        /* Heart Seal */
+        .message-note::after {
+            content: '❤';
+            position: absolute;
+            top: 25px; /* Position at the tip of the flap */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.4rem;
+            color: #c62828;
+            z-index: 3;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+
+        .message-note:hover {
+            /* This hover uses !important to override the JS parallax transform temporarily */
+            transform: scale(1.1) rotate(0deg) !important; 
+            z-index: 30;
+            background-color: #fff0e0;
+            box-shadow: 0 8px 15px rgba(255, 99, 71, 0.4); /* Subtle glow on hover */
+        }
+
+        /* Positioning messages */
+        .m1 { top: 15%; left: 10%; transform: rotate(-5deg); }
+        .m2 { top: 68%; right: 25%; transform: rotate(5deg); }
+        .m3 { top: 18%; right: 15%; transform: rotate(6deg); }
+        .m4 { top: 45%; left: 15%; transform: rotate(2deg); }
+        .m5 { top: 38%; right: 20%; transform: rotate(-4deg); }
+        .m6 { top: 65%; left: 25%; transform: rotate(-3deg); }
+
+        /* --- The Message Envelope/Trigger --- */
+        #message-trigger {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3.5rem; /* Slightly bigger heart */
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 5px 10px var(--pink-accent));
+        }
+
+        /* --- The Message Modal --- */
+        #message-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .message-card {
+            /* Parchment/Letter Background */
+            background-color: #fff8e1; /* Creamy color for paper look */
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            /* Enhanced Shadow for "Letter" feel: outer shadow, pink border, subtle inner shadow */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 0 5px var(--pink-accent), inset 0 0 15px rgba(255, 192, 203, 0.5); 
+            font-family: 'Amiri', serif;
+            position: relative;
+            border: 2px solid var(--pink-accent); 
+        }
+
+        .message-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            /* Beautiful Pink Font Color */
+            color: #d81b60; 
+            font-weight: bold; /* Ensure text is bold */
+            white-space: pre-line; /* Respects line breaks in text */
+            text-shadow: 0 0 1px rgba(255, 255, 255, 0.7); /* Subtle shadow for definition on cream background */
+        }
+        
+        .message-card, .message-text {
+            user-select: text;
+            -webkit-user-select: text; 
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+        }
+
+        /* --- The Teddy Bear --- */
+        #bear {
+            position: absolute;
+            bottom: 5%;
+            right: 10%;
+            width: 120px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        /* Info Button Styling (Top Right) */
+        #info-button {
+            position: fixed;
+            top: 20px;
+            right: 20px; /* Positioned on the right for Arabic Layout */
+            z-index: 40;
+            width: 48px;
+            height: 48px;
+            background-color: var(--pink-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        #info-button:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Exit Button Styling (Top Left) */
+        #exit-button {
+            position: fixed;
+            top: 20px;
+            left: 20px; /* Positioned on the left for Arabic Layout */
+            z-index: 40;
+            width: 48px;
+            height: 48px;
+            background-color: var(--pink-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        #exit-button:hover {
+            transform: scale(1.1) rotate(-5deg); 
+        }
+        
+        #info-menu {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 250px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+            text-align: right;
+            border: 2px solid var(--pink-accent);
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        #info-menu.open {
+            display: block;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shaking {
+            animation: shake 0.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -20px); }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Audio File: Ensure 'saad.mp3' is in the folder --><audio id="bg-music">
+        <source src="saad.mp3" type="audio/mpeg">
+        Your browser does support the audio element.
+    </audio>
+
+    <!-- 1. Start Overlay -->
+    <div id="start-overlay">
+        <h1 class="text-xl text-gray-400 mb-6 font-thin">أضيئي الغرفة لتري رسائلك</h1>
+        <button id="start-btn" class="start-btn">ghmdi 3winatk w brki</button>
+    </div>
+
+    <!-- 2. The Hanging Lamp -->
+    <div id="lamp-container">
+        <div class="wire"></div>
+        <div class="bulb-holder">
+            <div class="bulb" id="bulb"></div>
+        </div>
+    </div>
+
+    <!-- 3. Room Content (Visible only after light is on) -->
+    <div id="wall-content" class="wall-content">
+        
+        <!-- Messages without visible numbers, using data-id for JS linking -->
+        <div class="message-note m1" data-id="1"><span>رسالة افتتاحية</span></div>
+        <div class="message-note m2" data-id="2"><span>رسالة الوداع</span></div>
+        <div class="message-note m3" data-id="3"><span>رسالة السبب</span></div>
+        <div class="message-note m4" data-id="4"><span>رسالة اعتذار</span></div>
+        <div class="message-note m5" data-id="5"><span>رسالة ميلاد</span></div>
+        <div class="message-note m6" data-id="6"><span>رسالة ختامية</span></div>
+
+        <!-- The Message Trigger (A Floating Heart Icon) -->
+        <div id="message-trigger" title="رسالة القلب الكبرى">❤️</div>
+
+        <!-- The Teddy Bear (SVG) -->
+        <div id="bear" title="اضغط علي">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Ears --><circle cx="25" cy="25" r="12" fill="#8B4513"/>
+                <circle cx="75" cy="25" r="12" fill="#8B4513"/>
+                <circle cx="25" cy="25" r="6" fill="#D2691E"/>
+                <circle cx="75" cy="25" r="6" fill="#D2691E"/>
+                <!-- Head --><circle cx="50" cy="40" r="30" fill="#8B4513"/>
+                <!-- Snout --><ellipse cx="50" cy="45" rx="12" ry="10" fill="#D2B48C"/>
+                <circle cx="50" cy="42" r="3" fill="#3E2723"/>
+                <!-- Eyes --><circle cx="40" cy="35" r="3" fill="black"/>
+                <circle cx="60" cy="35" r="3" fill="black"/>
+                <circle cx="39" cy="34" r="1" fill="white"/>
+                <circle cx="59" cy="34" r="1" fill="white"/>
+                <!-- Body --><ellipse cx="50" cy="80" rx="35" ry="30" fill="#8B4513"/>
+                <!-- Belly --><ellipse cx="50" cy="80" rx="20" ry="18" fill="#D2B48C"/>
+                <!-- Arms/Legs implied by shape --></svg>
+        </div>
+
+        <!-- 6. Exit Button (Top Left) -->
+        <div id="exit-button" title="العودة إلى شاشة البداية">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" x2="9" y1="12" y2="12"/>
+            </svg>
+        </div>
+
+    </div>
+
+    <!-- 4. The Message Modal -->
+    <div id="message-modal">
+        <div class="message-card">
+            <span class="close-btn" id="close-msg">&times;</span>
+            <div class="message-text" id="modal-text">
+                <!-- Content will be injected by JS --></div>
+        </div>
+    </div>
+
+    <!-- 5. Info Button and Menu -->
+    <div id="info-button" title="معلومات عن هذا الموقع">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+        </svg>
+    </div>
+
+    <div id="info-menu">
+        <p class="text-lg font-semibold text-center leading-relaxed text-pink-700">
+            t9drri t9isi ay haja f Website had lweb derto khisisan lik w ntmna y3jbk
+        </p>
+    </div>
+
+
+    <script>
+        // DOM Elements
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const bgMusic = document.getElementById('bg-music');
+        const lampContainer = document.getElementById('lamp-container');
+        const bulb = document.getElementById('bulb');
+        const body = document.body;
+        const wallContent = document.getElementById('wall-content');
+        const bear = document.getElementById('bear');
+        
+        const messageTrigger = document.getElementById('message-trigger');
+        const messageModal = document.getElementById('message-modal');
+        const closeMsg = document.getElementById('close-msg');
+        const modalText = document.getElementById('modal-text');
+        const messageNotes = document.querySelectorAll('.message-note');
+
+        const infoButton = document.getElementById('info-button');
+        const infoMenu = document.getElementById('info-menu');
+        const exitButton = document.getElementById('exit-button'); // New DOM element
+        
+        let isLampOn = false;
+        // Global Audio Context variable
+        let audioContext;
+
+        // Function to generate and play a quick click sound using Web Audio API
+        function playClickSound() {
+            // Initialize AudioContext on first interaction
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            // Connect nodes
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Set frequency and type for a CALM click sound
+            oscillator.frequency.setValueAtTime(150, audioContext.currentTime); 
+            oscillator.type = 'sine'; 
+
+            // Create a sharp, fast decay (click sound envelope)
+            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime); 
+            gainNode.gain.linearRampToValueAtTime(0.001, audioContext.currentTime + 0.08); 
+
+            // Start and stop very quickly
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.08);
+        }
+
+        // The Main Poem
+        const mainPoem = `إلى صفاء 🌸
+
+التي تسكن قلبي دون استئذان…
+
+لم تكن الأيام جميلة كما هي اليوم إلا منذ عرفتكِ 💕.
+
+كل لحظة قضيتها معكِ تركت أثرًا في قلبي لا يزول ❤️✨.
+
+ابتسامتكِ 😊، حديثكِ 🗨️، نظراتكِ 👀…
+
+كلّها ذكريات محفوظة في داخلي
+
+كأنها هدايا صغيرة من القدر 🎁💗.
+
+أحبكِ لأنكِ أنتِ 💞…
+
+ولأنكِ كنتِ دائمًا اللحظة التي أنتظرها ⏳💖،
+
+والراحة التي أعود إليها 🫂💗،
+
+والقلب الذي يحتويني دون شروط ❤️🌙.
+
+صفاء،
+
+في كل ذكرى تجمعنا أتأكد أكثر
+
+أن وجودكِ في حياتي ليس صدفة،
+
+بل نعمة من الله لا أريد أن أفقدها يومًا 🙏❤️.
+
+أحبكِ الآن ❤️،
+
+وأحبكِ لما عشناه 💫،
+
+وأحبكِ لكل اللحظات القادمة التي لم نعشها بعد 🌅💖.`;
+
+        // Content for the 6 wall messages
+        const messageContents = {
+            '1': `hada hwa lmessage lwel li anktb lik mabghit ngolik fih ta haja bghit ha nchofk frhana 9bl mat9ray litters lakhrin hit baa9i saraha maytgal w mabghitch ngoul koulchi mn litter lwl, yalah ahbiba sdi had jwa w siri ljwa lakher 9rayh, kanbghik.`,
+            '2': `had litter lkhra mabghitch ngolik fiha walo saraha bghit ha n3rf rection dyalk w sf w bghit ngolik bli dak scarf d mikasa lhmer mama katgado 3la 9blk makfach lw9t ykon f birthday dyalk w smhi lia mais inchae lah atkmlo ana makan3rfch l crouchet w galt lia mama angado hit 3arfa w bghit ngolik bli kanbgghhik bzf w ila kan xi wahd baghi lik lkhir mn b3dmamak w babak w khouk fa hwa ana bidon ni9ach yalah thlay lia frask w astawdi3oki lilah ahbiba f had lil\n\nSun Nov 23 4Am From your love Saad :3`,
+            '3': `anti db f risala tanya yak mthmsa t3rfi chno jay ba9i yak, hadchi li bghit risala tanya bghit ha ndwi fiha 3lach 9rrt nbrmj had les websites saraha makantch atih elia lfikra kon ma tfkrt bli knt t3lmt chwi d HTML dak l3am w glt njrb w saraha frht mli kano results positif w glt y9der y3jbok hit m9adin bydi ana :) 
+w sabab lakhr hwa bghit nkhlik t3ichi tjriba akhra f nw3 d messagat machi ha messagat f insta 3adi mais ymkn tfa3li meahom w t9isi hadxi li fchacha bhala meak 
+yalah db siri l wer9a talta hit ba9i maskhitch mn lhdra m3ak😭`,
+            '4': `3arf chadk malal mais ha ana anbda ndwi meak bghitttt hdrti t9is 9lbk 
+awalan bghit n3tadr 3la ga3 aghalt li drt 3tabri had lwr9a dyal i3tidar 
+smhi lia mli kant9l9 kan3amlk btari9a 9asha wakha kanbghik
+w smhi lia mli tkhasmna dwit m3a girls 
+w smhi lia mahawltch nbadr mli kna mkhasmin 
+w smhi lia hit kanbgghi ndir jhdi kaml bach nkhlik frhana w makanjhch 
+smhi lia 3la ga3 had l aghlat w mtakd drt maktr w ntmna tsamhini 3lihom 
+w bima anani dkrt aghlati w 3tadrt fa akiiid anwa3dk mab9itch ghadi n3awd had l aghlat w kanbghiik, yalah ahbiba aji l litter 4 😂💗`,
+            '5': `(had litter hada bghit ha ndwi fih ela 3id miladk li hwa liom w bghit nchkr rbi hit jab wahd person bhalk fhad nhar 
+had nharli twldat fih Safae w jat fih lhade dnya had nhar li khlani nktb lik liom hadxi nhar li kanfkr fih 9bl mayji bchorra nhar li bsbabo kandir hadxi liom 
+afdal tarikh mn b3d tarikh li tjm3na fiih 
+yarbi bghit ga3 omnyati lihoma safae w omnyat safae yth99o liom mli td3i safae f slatha wla mli tnfkh 3la chm33a 💗💗)`,
+            '6': `anti db frisala ma 9abl l akhir mab9a waloo w athnay mn sda3 hbibk hhhh had page bghit nktb fiha ha chwi mn hob dyali lik wakha 3arfa chal kanbghik 
+anti raki hyati w rohi wkolchi wlah kanbghik bzaf w ana kanktb lik hadchi w kandhk w makrhtch n3n9 lpc ka anaho nti mn 9wt lfrha, kanbghik bzff wmostahiiil nkhlik w nti dyaaaali.`,
+        };
+        
+        // Manual mapping of rotation transforms for notes to be preserved during parallax
+        const noteRotation = {
+            'm1': 'rotate(-5deg)',
+            'm2': 'rotate(5deg)',
+            'm3': 'rotate(6deg)',
+            'm4': 'rotate(2deg)',
+            'm5': 'rotate(-4deg)',
+            'm6': 'rotate(-3deg)',
+        };
+
+        // Function to handle Parallax Effect based on mouse movement
+        function handleMouseMove(e) {
+            // Get viewport dimensions
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Calculate normalized cursor position from center
+            // Invert the values (* -1) so elements move in the opposite direction (Parallax effect)
+            const mouseX = (e.clientX - width / 2) * -1;
+            const mouseY = (e.clientY - height / 2) * -1;
+
+            // Depth strengths (higher value = greater movement, appears closer to viewer)
+            const strength = {
+                lamp: 0.010,   // Furthest layer (Least movement)
+                notes: 0.020,  // Middle layer (Wall content)
+                trigger: 0.030, // Floating heart
+                bear: 0.045,    // Closest object (Most movement)
+            };
+            
+            // --- Apply Parallax Effects ---
+
+            // 1. Bear (Closest Layer)
+            const bearX = mouseX * strength.bear;
+            const bearY = mouseY * strength.bear;
+            bear.style.transform = `translate(${bearX}px, ${bearY}px)`;
+
+            // 2. Message Trigger (Floating Heart)
+            // Needs to maintain its CSS transform: translateX(-50%)
+            const triggerX = mouseX * strength.trigger;
+            const triggerY = mouseY * strength.trigger;
+            // The existing CSS `animation: float` handles vertical movement, but we overwrite its transform.
+            // We must add back the `translateX(-50%)` to maintain centering.
+            messageTrigger.style.transform = `translate(${triggerX}px, ${triggerY}px) translateX(-50%)`;
+
+            // 3. Message Notes (Wall Content)
+            const notesX = mouseX * strength.notes;
+            const notesY = mouseY * strength.notes;
+            messageNotes.forEach(note => {
+                // Determine which rotation class applies to this note (m1-m6)
+                let rotationValue = '';
+                note.className.split(' ').forEach(cls => {
+                    if (noteRotation[cls]) {
+                        rotationValue = noteRotation[cls];
+                    }
+                });
+
+                // Combine the new parallax translation with the static rotation value
+                note.style.transform = `translate(${notesX}px, ${notesY}px) ${rotationValue}`;
+            });
+            
+            // 4. Lamp (Furthest Layer)
+            // Needs to maintain its CSS transform: translateX(-50%)
+            const lampX = mouseX * strength.lamp;
+            const lampY = mouseY * strength.lamp;
+            lampContainer.style.transform = `translate(${lampX}px, ${lampY}px) translateX(-50%)`;
+        }
+        
+        // Add mouse move listener to enable parallax
+        document.addEventListener('mousemove', handleMouseMove);
+        
+        // Function to return to the start screen (Now includes Fade Out)
+        function returnToStart() {
+            playClickSound(); 
+            
+            // 1. Start Fade Out Effect (2 seconds)
+            isLampOn = false;
+            bulb.classList.remove('lit'); // Turn off light bulb visual
+            
+            // Trigger the background color and content opacity transitions (2s)
+            body.style.backgroundColor = 'var(--dark-bg)';
+            wallContent.classList.remove('visible'); 
+
+            // Clean up UI elements (hide immediately)
+            infoMenu.classList.remove('open');
+            messageModal.style.display = 'none';
+            
+            // 2. Physical Reset (After the 2-second visual fade-out is complete)
+            setTimeout(() => {
+                
+                // Stop Music
+                bgMusic.pause();
+                bgMusic.currentTime = 0; 
+                
+                // Reset Lamp Position (fast drop effect is part of transition)
+                lampContainer.style.top = '-200px'; 
+
+                // Show Start Overlay
+                startOverlay.style.opacity = '1';
+                startOverlay.style.display = 'flex';
+                
+            }, 2000); // Wait 2 seconds (matching CSS transitions)
+        }
+
+
+        // 1. Initial Interaction: Play Music & Show Room
+        startBtn.addEventListener('click', () => {
+            // Play the click sound when starting the app
+            playClickSound();
+
+            // Try to play audio
+            bgMusic.play().catch(error => {
+                console.log("Autoplay prevented. User interaction required.");
+            });
+
+            // Fade out overlay
+            startOverlay.style.opacity = '0';
+            setTimeout(() => {
+                startOverlay.style.display = 'none';
+                // Drop the lamp down
+                lampContainer.style.top = '0px'; 
+            }, 1000);
+        });
+
+        // 2. Lamp Interaction
+        lampContainer.addEventListener('click', () => {
+            // Play the click sound when toggling the light
+            playClickSound();
+
+            // Toggle the state
+            isLampOn = !isLampOn;
+
+            if (isLampOn) {
+                // Turn ON
+                bulb.classList.add('lit');
+                body.style.backgroundColor = 'var(--light-bg)';
+                wallContent.classList.add('visible');
+
+            } else {
+                // Turn OFF
+                returnToStart(); // Use exit logic if turning off light
+            }
+        });
+        
+        // 3. Exit Button Listener
+        exitButton.addEventListener('click', returnToStart);
+
+
+        // 4. Bear Interaction (Vibrate)
+        bear.addEventListener('click', () => {
+            playClickSound(); 
+            bear.classList.add('shaking');
+            
+            // Allow vibration on mobile devices if supported
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+
+            // Remove class after animation finishes so it can be clicked again
+            setTimeout(() => {
+                bear.classList.remove('shaking');
+            }, 500);
+        });
+
+        // 5. Message Interactions
+        
+        // Function to open modal with specific text
+        function openModal(text) {
+            modalText.innerText = text;
+            messageModal.style.display = 'flex';
+        }
+
+        // Main Heart Message
+        messageTrigger.addEventListener('click', () => {
+            playClickSound(); 
+            openModal(mainPoem);
+        });
+
+        // Numbered Wall Messages
+        messageNotes.forEach(note => {
+            note.addEventListener('click', () => {
+                playClickSound(); 
+                const id = note.getAttribute('data-id');
+                const content = messageContents[id] || `Content not found for message ${id}.`;
+                openModal(content);
+            });
+        });
+
+        closeMsg.addEventListener('click', () => {
+            messageModal.style.display = 'none';
+        });
+
+        // Close modal if clicking outside the card
+        messageModal.addEventListener('click', (e) => {
+            if(e.target === messageModal) {
+                messageModal.style.display = 'none';
+            }
+        });
+
+        // 6. Info Button Interaction
+        infoButton.addEventListener('click', (e) => {
+            playClickSound(); // Play click sound
+            e.stopPropagation(); // Prevent closing if clicking on button
+            infoMenu.classList.toggle('open');
+        });
+
+        // Close info menu if clicking anywhere else on the screen
+        document.addEventListener('click', (e) => {
+            if (infoMenu.classList.contains('open') && !infoMenu.contains(e.target) && e.target !== infoButton) {
+                infoMenu.classList.remove('open');
+            }
+        });
+
+    </script>
+</body>
+</html>
